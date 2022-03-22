@@ -4,32 +4,36 @@ import 'CoreLibs/timer'
 local gfx         <const> = playdate.graphics
 local workMinutes <const> = 0.2 -- 25
 local restMinutes <const> = 0.1 -- 5
-
 local timer
-local function resetTimer(minutes)
-    if timer then
-        timer:remove()
-    end
-    timer = playdate.timer.new(1000 * 60 * minutes)
-end
-resetTimer(workMinutes)
 
-function minutesAndSecondsFromMilliseconds(ms)
+local function millisecondsFromMinutes(minutes)
+    return 1000 * 60 * minutes
+end
+
+local function minutesAndSecondsFromMilliseconds(ms)
     local  s <const> = math.floor(ms / 1000) % 60
     local  m <const> = math.floor(ms / (1000 * 60)) % 60
     return m, s
 end
 
-function addLeadingZero(num)
+local function addLeadingZero(num)
     if num < 10 then
         return '0'..num
     end
     return num
 end
 
-function isWorkTimer()
-    return timer.duration == 1000 * 60 * workMinutes
+local function isWorkTimer()
+    return timer.duration == millisecondsFromMinutes(workMinutes)
 end
+
+local function resetTimer(minutes)
+    if timer then
+        timer:remove()
+    end
+    timer = playdate.timer.new(millisecondsFromMinutes(minutes))
+end
+resetTimer(workMinutes)
 
 function playdate.update()
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
@@ -48,6 +52,3 @@ function playdate.update()
 
     playdate.timer.updateTimers()
 end
-
--- 1. [COACH] crank-controlled timer
--- 2. [FOCUS] simple pomodoro timer flow
