@@ -2,6 +2,7 @@ import 'CoreLibs/graphics'
 import 'CoreLibs/timer'
 
 local gfx         <const> = playdate.graphics
+local font        <const> = gfx.font.new('Fonts/Roobert-24-Medium') -- Why numerals-font isn't working?
 local workMinutes <const> = 0.2 -- 25
 local restMinutes <const> = 0.1 -- 5
 local timer
@@ -35,6 +36,8 @@ local function resetTimer(minutes)
 end
 resetTimer(workMinutes)
 
+gfx.setFont(font)
+playdate.display.setInverted(true)
 function playdate.update()
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
     m, s       = addLeadingZero(m), addLeadingZero(s)
