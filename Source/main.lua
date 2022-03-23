@@ -3,9 +3,9 @@ import 'CoreLibs/timer'
 
 local gfx         <const> = playdate.graphics
 local font        <const> = gfx.font.new('Fonts/Roobert-24-Medium') -- Why numerals-font isn't working?
-local workMinutes <const> = 0.2 -- 25
-local restMinutes <const> = 0.1 -- 5
-local timer
+local workMinutes <const> = 25
+local restMinutes <const> = 5
+local timer, text
 
 local function millisecondsFromMinutes(minutes)
     return 1000 * 60 * minutes
@@ -37,13 +37,27 @@ end
 resetTimer(workMinutes)
 
 gfx.setFont(font)
+
+local function setupText()
+    local w, h = gfx.getTextSize('00:00')
+    text = gfx.image.new(w, h)
+end
+
+local function drawText(content)
+    text:clear(gfx.kColorWhite)
+    gfx.pushContext(text)
+        gfx.drawText(content, 0, 0)
+    gfx.popContext()
+    text:scaledImage(3):drawCentered(200, 120)
+end
+
+setupText()
 playdate.display.setInverted(true)
 function playdate.update()
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
     m, s       = addLeadingZero(m), addLeadingZero(s)
 
-    gfx.clear()
-    gfx.drawText(m..':'..s, 0, 0)
+    drawText(m..':'..s)
 
     if timer.timeLeft == 0 then
         if isWorkTimer() then
