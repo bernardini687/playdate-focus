@@ -2,7 +2,7 @@ import 'CoreLibs/graphics'
 import 'CoreLibs/timer'
 
 local gfx         <const> = playdate.graphics
-local font        <const> = gfx.font.new('Fonts/Roobert-24-Medium') -- Why numerals-font isn't working?
+local font        <const> = gfx.font.new('Fonts/Mikodacs-Clock')
 local workMinutes <const> = 25
 local restMinutes <const> = 5
 local timer, text
@@ -39,7 +39,7 @@ resetTimer(workMinutes)
 gfx.setFont(font)
 
 local function setupText()
-    local w, h = gfx.getTextSize('00:00')
+    local w, h = gfx.getTextSize('44:44') -- `4` looks like the largest digit in the font.
     text = gfx.image.new(w, h)
 end
 
@@ -48,7 +48,7 @@ local function drawText(content)
     gfx.pushContext(text)
         gfx.drawText(content, 0, 0)
     gfx.popContext()
-    text:scaledImage(3):drawCentered(200, 120)
+    text:drawCentered(200, 120)
 end
 
 setupText()
