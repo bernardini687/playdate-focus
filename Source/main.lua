@@ -5,7 +5,8 @@ local gfx         <const> = playdate.graphics
 local font        <const> = gfx.font.new('Fonts/Mikodacs-Clock')
 local workMinutes <const> = 25
 local restMinutes <const> = 5
-local timer, text
+local pause               = true
+local timer, timerValueCache, text
 
 local function millisecondsFromMinutes(minutes)
     return 1000 * 60 * minutes
@@ -28,13 +29,13 @@ local function isWorkTimer()
     return timer.duration == millisecondsFromMinutes(workMinutes)
 end
 
-local function resetTimer(minutes)
+local function resetTimer(milliseconds)
     if timer then
         timer:remove()
     end
-    timer = playdate.timer.new(millisecondsFromMinutes(minutes))
+    timer = playdate.timer.new(milliseconds)
 end
-resetTimer(workMinutes)
+resetTimer(millisecondsFromMinutes(workMinutes))
 
 gfx.setFont(font)
 
@@ -48,7 +49,7 @@ local function drawText(content)
     gfx.pushContext(text)
         gfx.drawText(content, 0, 0)
     gfx.popContext()
-    text:drawCentered(200, 120)
+    text:drawCentered(210, 120)
 end
 
 setupText()
@@ -61,11 +62,26 @@ function playdate.update()
 
     if timer.timeLeft == 0 then
         if isWorkTimer() then
-            resetTimer(restMinutes)
+            resetTimer(millisecondsFromMinutes(restMinutes))
         else
-            resetTimer(workMinutes)
+            resetTimer(millisecondsFromMinutes(workMinutes))
         end
     end
 
+    if pause then
+        timer:pause()
+        playdate.stop()
+    end
+
     playdate.timer.updateTimers()
+end
+
+function playdate.AButtonUp()
+    pause = not pause
+    timerValueCache = timer.timeLeft
+
+    if pause == false then
+        resetTimer(timerValueCache)
+        playdate.start()
+    end
 end
