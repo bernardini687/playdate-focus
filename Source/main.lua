@@ -5,8 +5,8 @@ local gfx         <const> = playdate.graphics
 local font        <const> = gfx.font.new('Fonts/Mikodacs-Clock')
 local workMinutes <const> = 25
 local restMinutes <const> = 5
-local pause               = true
-local timer, timerValueCache, text
+local paused              = true
+local timer, text
 
 local function millisecondsFromMinutes(minutes)
     return 1000 * 60 * minutes
@@ -49,7 +49,7 @@ local function drawText(content)
     gfx.pushContext(text)
         gfx.drawText(content, 0, 0)
     gfx.popContext()
-    text:drawCentered(210, 120)
+    text:drawCentered(214, 120) -- Add a small offset to the right of the vertical center.
 end
 
 setupText()
@@ -68,7 +68,7 @@ function playdate.update()
         end
     end
 
-    if pause then
+    if paused then
         timer:pause()
         playdate.stop()
     end
@@ -76,12 +76,10 @@ function playdate.update()
     playdate.timer.updateTimers()
 end
 
-function playdate.AButtonUp()
-    pause = not pause
-    timerValueCache = timer.timeLeft
-
-    if pause == false then
-        resetTimer(timerValueCache)
+function playdate.AButtonDown()
+    paused = not paused
+    if not paused then
+        resetTimer(timer.timeLeft)
         playdate.start()
     end
 end
