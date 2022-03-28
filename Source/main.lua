@@ -3,9 +3,9 @@ import 'CoreLibs/timer'
 
 local gfx         <const> = playdate.graphics
 local font        <const> = gfx.font.new('Fonts/Mikodacs-Clock')
-local workMinutes <const> = 25
-local restMinutes <const> = 5
-local paused              = true
+local workMinutes <const> = .2 -- 25
+local restMinutes <const> = .1 -- 5
+local isPause, isWork     = true, true
 local timer
 
 local function millisecondsFromMinutes(minutes)
@@ -25,19 +25,13 @@ local function addLeadingZero(num)
     return num
 end
 
-local function isWorkTimer()
-    return timer.duration == millisecondsFromMinutes(workMinutes) -- TODO: this is buggy because we reset timers and the duration is not predictable anymore :(
-end
-
-local function resetTimer(milliseconds)
+local function resetTimer(ms)
     if timer then
         timer:remove()
     end
-    timer = playdate.timer.new(milliseconds)
+    timer = playdate.timer.new(ms)
 end
-resetTimer(millisecondsFromMinutes(workMinutes))
 
-gfx.setFont(font)
 local function drawText()
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
     m, s       = addLeadingZero(m), addLeadingZero(s)
@@ -52,35 +46,38 @@ local function drawText()
     img:drawCentered(200, 120)
 end
 
-playdate.display.setInverted(true)
+-- Setup:
+gfx.setFont(font)
+playdate.display.setInverted(isWork)
+resetTimer(millisecondsFromMinutes(workMinutes))
+
 function playdate.update()
     drawText()
 
-    if timer.timeLeft == 0 then
-        if isWorkTimer() then
-            resetTimer(millisecondsFromMinutes(restMinutes))
-            playdate.display.setInverted(false)
-            drawText()
-            paused = true
-        else
-            resetTimer(millisecondsFromMinutes(workMinutes))
-            playdate.display.setInverted(true)
-            drawText()
-            paused = true
-        end
-    end
-
-    if paused then
+    if isPause then
         timer:pause()
         playdate.stop()
+    end
+
+    if timer.timeLeft == 0 then
+        if isWork then
+            resetTimer(millisecondsFromMinutes(restMinutes))
+            isWork = false
+        else
+            resetTimer(millisecondsFromMinutes(workMinutes))
+            isWork = true
+        end
+        playdate.display.setInverted(isWork)
+        isPause = true
     end
 
     playdate.timer.updateTimers()
 end
 
 function playdate.AButtonDown()
-    paused = not paused
-    if not paused then
+    isPause = not isPause
+
+    if not isPause then
         resetTimer(timer.timeLeft)
         playdate.start()
     end
