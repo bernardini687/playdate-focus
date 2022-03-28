@@ -6,7 +6,7 @@ local font        <const> = gfx.font.new('Fonts/Mikodacs-Clock')
 local workMinutes <const> = 25
 local restMinutes <const> = 5
 local paused              = true
-local timer, text
+local timer
 
 local function millisecondsFromMinutes(minutes)
     return 1000 * 60 * minutes
@@ -26,7 +26,7 @@ local function addLeadingZero(num)
 end
 
 local function isWorkTimer()
-    return timer.duration == millisecondsFromMinutes(workMinutes)
+    return timer.duration == millisecondsFromMinutes(workMinutes) -- TODO: this is buggy because we reset timers and the duration is not predictable anymore :(
 end
 
 local function resetTimer(milliseconds)
@@ -38,33 +38,35 @@ end
 resetTimer(millisecondsFromMinutes(workMinutes))
 
 gfx.setFont(font)
-
-local function setupText()
-    local w, h = gfx.getTextSize('44:44') -- `4` looks like the largest digit in the font.
-    text = gfx.image.new(w, h)
-end
-
-local function drawText(content)
-    text:clear(gfx.kColorWhite)
-    gfx.pushContext(text)
-        gfx.drawText(content, 0, 0)
-    gfx.popContext()
-    text:drawCentered(214, 120) -- Add a small offset to the right of the vertical center.
-end
-
-setupText()
-playdate.display.setInverted(true)
-function playdate.update()
+local function drawText()
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
     m, s       = addLeadingZero(m), addLeadingZero(s)
+    local txt  = m..':'..s
+    local w, h = gfx.getTextSize(txt)
+    local img  = gfx.image.new(w + 50, h)
 
-    drawText(m..':'..s)
+    img:clear(gfx.kColorWhite)
+    gfx.pushContext(img)
+        gfx.drawText(txt, 25, 0)
+    gfx.popContext()
+    img:drawCentered(200, 120)
+end
+
+playdate.display.setInverted(true)
+function playdate.update()
+    drawText()
 
     if timer.timeLeft == 0 then
         if isWorkTimer() then
             resetTimer(millisecondsFromMinutes(restMinutes))
+            playdate.display.setInverted(false)
+            drawText()
+            paused = true
         else
             resetTimer(millisecondsFromMinutes(workMinutes))
+            playdate.display.setInverted(true)
+            drawText()
+            paused = true
         end
     end
 
