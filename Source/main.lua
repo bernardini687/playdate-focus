@@ -1,11 +1,12 @@
 import 'CoreLibs/graphics'
 import 'CoreLibs/timer'
+import 'soundManager'
 
-local gfx         <const> = playdate.graphics
-local font        <const> = gfx.font.new('Fonts/Mikodacs-Clock')
-local workMinutes <const> = .2 -- 25
-local restMinutes <const> = .1 -- 5
-local isPause, isWork     = true, true
+local gfx          <const> = playdate.graphics
+local font         <const> = gfx.font.new('Fonts/Mikodacs-Clock')
+local kWorkMinutes <const> = .2 -- 25
+local kRestMinutes <const> = .1 -- 5
+local isPause, isWork      = true, true
 local timer
 
 local function millisecondsFromMinutes(minutes)
@@ -20,7 +21,7 @@ end
 
 local function addLeadingZero(num)
     if num < 10 then
-        return '0'..num
+        return '0' .. num
     end
     return num
 end
@@ -35,7 +36,7 @@ end
 local function drawText()
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
     m, s       = addLeadingZero(m), addLeadingZero(s)
-    local txt  = m..':'..s
+    local txt  = m .. ':' .. s
     local w, h = gfx.getTextSize(txt)
     local img  = gfx.image.new(w + 50, h)
 
@@ -49,7 +50,7 @@ end
 -- Setup:
 gfx.setFont(font)
 playdate.display.setInverted(isWork)
-resetTimer(millisecondsFromMinutes(workMinutes))
+resetTimer(millisecondsFromMinutes(kWorkMinutes))
 
 function playdate.update()
     drawText()
@@ -61,12 +62,13 @@ function playdate.update()
 
     if timer.timeLeft == 0 then
         if isWork then
-            resetTimer(millisecondsFromMinutes(restMinutes))
+            resetTimer(millisecondsFromMinutes(kRestMinutes))
             isWork = false
         else
-            resetTimer(millisecondsFromMinutes(workMinutes))
+            resetTimer(millisecondsFromMinutes(kWorkMinutes))
             isWork = true
         end
+        SoundManager:playSound(SoundManager.kTimerEnd)
         playdate.display.setInverted(isWork)
         isPause = true
     end
@@ -74,10 +76,13 @@ function playdate.update()
     playdate.timer.updateTimers()
 end
 
-function playdate.AButtonDown()
+function playdate.AButtonDown() -- TODO: BButtonDown, anyButtonDown...
     isPause = not isPause
 
-    if not isPause then
+    if isPause then
+        SoundManager:playSound(SoundManager.kPause)
+    else
+        SoundManager:playSound(SoundManager.kResume)
         resetTimer(timer.timeLeft)
         playdate.start()
     end
