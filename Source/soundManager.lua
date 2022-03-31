@@ -17,7 +17,3 @@ SoundManager.sounds = sounds
 function SoundManager:playSound(name)
 	self.sounds[name]:play(1)
 end
-
-function SoundManager:stopSound(name)
-	self.sounds[name]:stop()
-end

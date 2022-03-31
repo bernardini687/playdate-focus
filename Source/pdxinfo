@@ -1,7 +1,6 @@
-name=Playground
-author=You, Inc.
-description=A basic game template.
-bundleID=com.yourcompany.PlaygroundGame
+name=focus
+author=Oscar Bernardini
+description=A minimalist pomodoro timer implementation.
+bundleID=com.oscarbernardini.focus
 version=1.0
-buildNumber=100
 imagePath=SystemAssets
