@@ -51,26 +51,31 @@ local function drawText()
 end
 
 local function startWorkTimer()
+    isWork = true
+    playdate.display.setInverted(isWork)
     resetTimer(millisecondsFromMinutes(workMinutes))
 end
 
 local function startRestTimer()
+    isWork = false
+    playdate.display.setInverted(isWork)
     resetTimer(millisecondsFromMinutes(restMinutes))
 end
 
 -- Setup:
 gfx.setFont(font)
-playdate.display.setInverted(isWork)
 startWorkTimer()
 menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
     workMinutes = choice
     startWorkTimer()
     drawText()
+    isPause = true
 end)
 menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
     restMinutes = choice
     startRestTimer()
     drawText()
+    isPause = true
 end)
 
 function playdate.update()
@@ -82,16 +87,14 @@ function playdate.update()
     end
 
     if timer.timeLeft == 0 then
+        isPause = true
+        SoundManager:playSound(SoundManager.kTimerEnd)
+
         if isWork then
             startRestTimer()
-            isWork = false
         else
             startWorkTimer()
-            isWork = true
         end
-        SoundManager:playSound(SoundManager.kTimerEnd)
-        playdate.display.setInverted(isWork)
-        isPause = true
     end
 
     playdate.timer.updateTimers()
