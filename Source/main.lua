@@ -24,7 +24,7 @@ end
 
 local function addLeadingZero(num)
     if num < 10 then
-        return '0' .. num
+        return '0'..num
     end
     return num
 end
@@ -39,9 +39,9 @@ end
 local function drawText()
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
     m, s       = addLeadingZero(m), addLeadingZero(s)
-    local txt  = m .. ':' .. s
+    local txt  = m..':'..s
     local w, h = gfx.getTextSize(txt)
-    local img  = gfx.image.new(w + 50, h)
+    local img  = gfx.image.new(w + 50, h) -- Add extra space around the text to cover for wider numbers.
 
     img:clear(gfx.kColorWhite)
     gfx.pushContext(img)
@@ -50,19 +50,26 @@ local function drawText()
     img:drawCentered(200, 120)
 end
 
+local function startWorkTimer()
+    resetTimer(millisecondsFromMinutes(workMinutes))
+end
+
+local function startRestTimer()
+    resetTimer(millisecondsFromMinutes(restMinutes))
+end
+
 -- Setup:
 gfx.setFont(font)
 playdate.display.setInverted(isWork)
-resetTimer(millisecondsFromMinutes(workMinutes))
-
+startWorkTimer()
 menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
     workMinutes = choice
-    resetTimer(millisecondsFromMinutes(workMinutes))
+    startWorkTimer()
     drawText()
 end)
 menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
     restMinutes = choice
-    resetTimer(millisecondsFromMinutes(restMinutes))
+    startRestTimer()
     drawText()
 end)
 
@@ -76,10 +83,10 @@ function playdate.update()
 
     if timer.timeLeft == 0 then
         if isWork then
-            resetTimer(millisecondsFromMinutes(restMinutes))
+            startRestTimer()
             isWork = false
         else
-            resetTimer(millisecondsFromMinutes(workMinutes))
+            startWorkTimer()
             isWork = true
         end
         SoundManager:playSound(SoundManager.kTimerEnd)
@@ -90,7 +97,7 @@ function playdate.update()
     playdate.timer.updateTimers()
 end
 
-function playdate.AButtonDown() -- TODO: BButtonDown, anyButtonDown...
+local function resumeOrPause()
     isPause = not isPause
 
     if isPause then
@@ -100,4 +107,12 @@ function playdate.AButtonDown() -- TODO: BButtonDown, anyButtonDown...
         resetTimer(timer.timeLeft)
         playdate.start()
     end
+end
+
+function playdate.AButtonDown()
+    resumeOrPause()
+end
+
+function playdate.BButtonDown()
+    resumeOrPause()
 end
