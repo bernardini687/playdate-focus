@@ -1,12 +1,17 @@
-import 'CoreLibs/graphics'
 import 'CoreLibs/timer'
+
+gfx    = playdate.graphics
+sprite = gfx.sprite
+
+import 'dynamicText'
 import 'soundManager'
 
-local gfx           <const> = playdate.graphics
-local font          <const> = gfx.font.new('Fonts/Mikodacs-Clock')
+local fontName      <const> = 'Mikodacs-Clock'
 local menu          <const> = playdate.getSystemMenu()
-local workIntervals <const> = {'25', '30', '20'}
-local restIntervals <const> = { '5', '10', '15'}
+local workIntervals <const> = {'0.2', '25', '30', '20'}
+local restIntervals <const> = {'0.1', '5', '10', '15'}
+local clock         <const> = DynamicText(200, 120, fontName)
+
 local workMinutes           = workIntervals[1]
 local restMinutes           = restIntervals[1]
 local isPause, isWork       = true, true
@@ -36,18 +41,12 @@ local function resetTimer(ms)
     timer = playdate.timer.new(ms)
 end
 
-local function drawText()
+local function updateClock()
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
     m, s       = addLeadingZero(m), addLeadingZero(s)
     local txt  = m..':'..s
-    local w, h = gfx.getTextSize(txt)
-    local img  = gfx.image.new(w + 50, h) -- Add extra space around the text to cover for wider numbers.
 
-    img:clear(gfx.kColorWhite)
-    gfx.pushContext(img)
-        gfx.drawText(txt, 25, 0)
-    gfx.popContext()
-    img:drawCentered(200, 120)
+    clock:setContent(txt)
 end
 
 local function startWorkTimer()
@@ -63,32 +62,30 @@ local function startRestTimer()
 end
 
 -- Setup:
-gfx.setFont(font)
 startWorkTimer()
 menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
     workMinutes = choice
     startWorkTimer()
-    drawText()
+    updateClock()
     isPause = true
 end)
 menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
     restMinutes = choice
     startRestTimer()
-    drawText()
+    updateClock()
     isPause = true
 end)
 
 function playdate.update()
-    drawText()
+    updateClock()
 
     if isPause then
         timer:pause()
-        playdate.stop()
     end
 
     if timer.timeLeft == 0 then
         isPause = true
-        SoundManager:playSound(SoundManager.kTimerEnd)
+        SoundManager:play(SoundManager.kTimerEnd)
 
         if isWork then
             startRestTimer()
@@ -98,17 +95,17 @@ function playdate.update()
     end
 
     playdate.timer.updateTimers()
+    sprite.update()
 end
 
 local function resumeOrPause()
     isPause = not isPause
 
     if isPause then
-        SoundManager:playSound(SoundManager.kPause)
+        SoundManager:play(SoundManager.kPause)
     else
-        SoundManager:playSound(SoundManager.kResume)
+        SoundManager:play(SoundManager.kResume)
         resetTimer(timer.timeLeft)
-        playdate.start()
     end
 end
 
