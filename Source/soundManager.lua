@@ -9,11 +9,11 @@ SoundManager.kTimerEnd = 'elegant_chime'
 local sounds <const> = {}
 
 for _, v in pairs(SoundManager) do
-	sounds[v] = player.new('Sounds/'..v)
+    sounds[v] = player.new('Sounds/'..v)
 end
 
 SoundManager.sounds = sounds
 
 function SoundManager:play(name)
-	self.sounds[name]:play(1)
+    self.sounds[name]:play(1)
 end
