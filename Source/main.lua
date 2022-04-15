@@ -1,7 +1,31 @@
-import 'CoreLibs/timer'
-
 gfx    = playdate.graphics
 sprite = gfx.sprite
+
+-- import 'app'
+
+-- App:setup()
+
+-- function playdate.update()
+--         App:run()
+-- end
+--
+-- function playdate.AButtonDown()
+--         App:resumeOrPause()
+-- end
+--
+-- function playdate.BButtonDown()
+--         App:resumeOrPause()
+-- end
+--
+-- function playdate.gameWillTerminate()
+--         App:write()
+-- end
+--
+-- function playdate.deviceWillSleep()
+--         App:write()
+-- end
+
+import 'CoreLibs/timer'
 
 import 'dynamicText'
 import 'soundManager'
@@ -41,16 +65,7 @@ local function resetTimer(ms)
     timer = playdate.timer.new(ms)
 end
 
-local function updateClock(xtmp)
---     print(timer.currentTime)
---     local x = timer.currentTime % 1000
---     print(xtmp..': '..x)
--- --
---     if x ~= 0 then
---         print('🦄')
---         return
---     end
-
+local function updateClock()
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
     m, s       = addLeadingZero(m), addLeadingZero(s)
     local txt  = m..':'..s
@@ -77,13 +92,13 @@ startWorkTimer()
 -- menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
 --     workMinutes = choice
 --     startWorkTimer()
---     updateClock('xfrom work time')
+--     updateClock()
 --     isPause = true
 -- end)
 -- menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
 --     restMinutes = choice
 --     startRestTimer()
---     updateClock('xfrom rest time')
+--     updateClock()
 --     isPause = true
 -- end)
 
@@ -91,14 +106,12 @@ playdate.display.setRefreshRate(10)
 
 function playdate.update()
     if isPause then
-        print(timer.timeLeft)
         timer:pause()
         playdate.display.flush() -- TODO: try to remove this and see if anything changes!
         playdate.stop() -- prevents the next playdate.update() callback
-        print(timer.timeLeft)
     end
 
-    updateClock('xfrom main update')
+    updateClock()
 
     if timer.timeLeft == 0 then
         isPause = true
