@@ -1,4 +1,8 @@
-+ refactor with sprites
++ cleanup debug messages
+
++ introduce app
+
++ reintroduce settings
 
 + remember settings like `today` does
 

@@ -12,9 +12,9 @@ local workIntervals <const> = {'0.2', '25', '30', '20'}
 local restIntervals <const> = {'0.1', '5', '10', '15'}
 local clock         <const> = DynamicText(200, 120, fontName)
 
-local workMinutes           = workIntervals[1]
-local restMinutes           = restIntervals[1]
-local isPause, isWork       = true, true
+local workMinutes     = workIntervals[1]
+local restMinutes     = restIntervals[1]
+local isPause, isWork = true, true
 local timer
 
 local function millisecondsFromMinutes(minutes)
@@ -41,12 +41,23 @@ local function resetTimer(ms)
     timer = playdate.timer.new(ms)
 end
 
-local function updateClock()
+local function updateClock(xtmp)
+--     print(timer.currentTime)
+--     local x = timer.currentTime % 1000
+--     print(xtmp..': '..x)
+-- --
+--     if x ~= 0 then
+--         print('🦄')
+--         return
+--     end
+
     local m, s = minutesAndSecondsFromMilliseconds(timer.timeLeft)
     m, s       = addLeadingZero(m), addLeadingZero(s)
     local txt  = m..':'..s
 
-    clock:setContent(txt)
+    if txt ~= clock.content then
+        clock:setContent(txt)
+    end
 end
 
 local function startWorkTimer()
@@ -63,25 +74,31 @@ end
 
 -- Setup:
 startWorkTimer()
-menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
-    workMinutes = choice
-    startWorkTimer()
-    updateClock()
-    isPause = true
-end)
-menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
-    restMinutes = choice
-    startRestTimer()
-    updateClock()
-    isPause = true
-end)
+-- menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
+--     workMinutes = choice
+--     startWorkTimer()
+--     updateClock('xfrom work time')
+--     isPause = true
+-- end)
+-- menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
+--     restMinutes = choice
+--     startRestTimer()
+--     updateClock('xfrom rest time')
+--     isPause = true
+-- end)
+
+playdate.display.setRefreshRate(10)
 
 function playdate.update()
-    updateClock()
-
     if isPause then
+        print(timer.timeLeft)
         timer:pause()
+        playdate.display.flush() -- TODO: try to remove this and see if anything changes!
+        playdate.stop() -- prevents the next playdate.update() callback
+        print(timer.timeLeft)
     end
+
+    updateClock('xfrom main update')
 
     if timer.timeLeft == 0 then
         isPause = true
@@ -94,8 +111,8 @@ function playdate.update()
         end
     end
 
-    playdate.timer.updateTimers()
     sprite.update()
+    playdate.timer.updateTimers()
 end
 
 local function resumeOrPause()
@@ -106,6 +123,7 @@ local function resumeOrPause()
     else
         SoundManager:play(SoundManager.kResume)
         resetTimer(timer.timeLeft)
+        playdate.start()
     end
 end
 
