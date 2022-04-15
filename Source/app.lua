@@ -56,42 +56,54 @@ end
 
 local function resetWorkTimer()
     isWorkSession = true
-    playdate.display.setInverted(isWorkSession) -- TODO: see if it's the same to put this inside `resetTimer()`
     resetTimer(millisecondsFromMinutes(workMinutes))
 end
 
 local function resetRestTimer()
     isWorkSession = false
-    playdate.display.setInverted(isWorkSession) -- TODO: see if it's the same to put this inside `resetTimer()`
     resetTimer(millisecondsFromMinutes(restMinutes))
 end
 
 -- public methods:
 
 function App:setup()
-    -- TODO: add options menu item
+    -- menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
+    --     workMinutes = choice
+    --     startWorkTimer()
+    --     updateClock()
+    --     isPause = true
+    -- end)
+    -- menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
+    --     restMinutes = choice
+    --     startRestTimer()
+    --     updateClock()
+    --     isPause = true
+    -- end)
+
     resetWorkTimer()
-    -- TODO?: playdate.display.setRefreshRate(10)
+    playdate.setAutoLockDisabled(true)
+    playdate.display.setInverted(isWorkSession)
+    playdate.display.setRefreshRate(15)
 end
 
 function App:run()
     if isPaused then
-        activeTimer:pause()
-        playdate.display.flush() -- TODO: try to remove this and see if anything changes!
-        playdate.stop() -- prevents the next playdate.update() callback
+        self:pause()
     end
 
     updateClock()
 
     if activeTimer.timeLeft == 0 then
-        isPaused = true
         SoundManager:play(SoundManager.kTimerEnd)
+        isPaused = true
 
         if isWorkSession then
             resetRestTimer()
         else
             resetWorkTimer()
         end
+        activeTimer:pause()
+        playdate.display.setInverted(isWorkSession)
     end
 
     sprite.update()
@@ -103,12 +115,34 @@ function App:resumeOrPause()
 
     if isPaused then
         SoundManager:play(SoundManager.kPause)
+        activeTimer:pause()
     else
         SoundManager:play(SoundManager.kResume)
-        resetTimer(activeTimer.timeLeft)
-        playdate.start()
+        self:resume()
     end
 end
 
+function App:pause()
+    -- print('pause: '..activeTimer.timeLeft) -- DEBUG
+    playdate.setAutoLockDisabled(false)
+    playdate.stop() -- prevents the next playdate.update() callback
+end
+
+function App:resume()
+    -- print('resume: '..activeTimer.timeLeft) -- DEBUG
+    resetTimer(activeTimer.timeLeft)
+    playdate.setAutoLockDisabled(true)
+    playdate.start()
+end
+
 -- function App:write()
+--     playdate.datastore.write({})
+-- end
+
+-- function playdate.gameWillPause() -- DEBUG
+--     print('pause: '..activeTimer.timeLeft)
+-- end
+
+-- function playdate.gameWillResume() -- DEBUG
+--     print('resume: '..activeTimer.timeLeft)
 -- end

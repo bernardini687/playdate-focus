@@ -1,0 +1,17 @@
+test scenarios:
+
+work | rest: running
+
+work | rest: running + menu
+
+work | rest: running + lock
+
+work | rest: running + menu + lock
+
+work | rest: paused
+
+work | rest: paused + menu
+
+work | rest: paused + lock
+
+work | rest: paused + menu + lock
