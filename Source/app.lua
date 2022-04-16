@@ -44,16 +44,6 @@ local function resetTimer(ms)
     activeTimer = timer.new(ms)
 end
 
-local function updateClock()
-    local m, s = minutesAndSecondsFromMilliseconds(activeTimer.timeLeft)
-    m, s       = addLeadingZero(m), addLeadingZero(s)
-    local text = m..':'..s
-
-    if text ~= clock.content then
-        clock:setContent(text)
-    end
-end
-
 local function resetWorkTimer()
     isWorkSession = true
     resetTimer(millisecondsFromMinutes(workMinutes))
@@ -62,6 +52,16 @@ end
 local function resetRestTimer()
     isWorkSession = false
     resetTimer(millisecondsFromMinutes(restMinutes))
+end
+
+local function updateClock()
+    local m, s = minutesAndSecondsFromMilliseconds(activeTimer.timeLeft)
+    m, s       = addLeadingZero(m), addLeadingZero(s)
+    local text = m..':'..s
+
+    if text ~= clock.content then
+        clock:setContent(text)
+    end
 end
 
 -- public methods:
@@ -86,7 +86,20 @@ function App:setup()
     playdate.display.setRefreshRate(15)
 end
 
-function App:run()
+function App:pause()
+    -- print('pause: '..activeTimer.timeLeft) -- DEBUG
+    playdate.setAutoLockDisabled(false)
+    playdate.stop() -- prevents the next playdate.update() callback
+end
+
+function App:resume()
+    -- print('resume: '..activeTimer.timeLeft) -- DEBUG
+    resetTimer(activeTimer.timeLeft)
+    playdate.setAutoLockDisabled(true)
+    playdate.start()
+end
+
+function App:update()
     if isPaused then
         self:pause()
     end
@@ -102,6 +115,8 @@ function App:run()
         else
             resetWorkTimer()
         end
+        -- a timer start automatically when created, let's pause it before the `updateTimers()`
+        -- to try and be as precise as possible
         activeTimer:pause()
         playdate.display.setInverted(isWorkSession)
     end
@@ -120,19 +135,6 @@ function App:resumeOrPause()
         SoundManager:play(SoundManager.kResume)
         self:resume()
     end
-end
-
-function App:pause()
-    -- print('pause: '..activeTimer.timeLeft) -- DEBUG
-    playdate.setAutoLockDisabled(false)
-    playdate.stop() -- prevents the next playdate.update() callback
-end
-
-function App:resume()
-    -- print('resume: '..activeTimer.timeLeft) -- DEBUG
-    resetTimer(activeTimer.timeLeft)
-    playdate.setAutoLockDisabled(true)
-    playdate.start()
 end
 
 -- function App:write()

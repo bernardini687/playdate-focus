@@ -6,7 +6,7 @@ import 'app'
 App:setup()
 
 function playdate.update()
-    App:run()
+    App:update()
 end
 
 function playdate.AButtonDown()
