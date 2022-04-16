@@ -7,8 +7,8 @@ import 'soundManager'
 -- local store         <const> = playdate.datastore.read()
 local timer         <const> = playdate.timer
 local clock         <const> = DynamicText(200, 120, 'Mikodacs-Clock')
-local workIntervals <const> = {'0.2', '25', '30', '20'}
-local restIntervals <const> = {'0.1', '5', '10', '15'}
+local workIntervals <const> = {'25', '30', '20'}
+local restIntervals <const> = {'5', '10', '15'}
 
 local workMinutes   = workIntervals[1]
 local restMinutes   = restIntervals[1]
