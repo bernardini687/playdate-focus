@@ -3,7 +3,7 @@ import 'CoreLibs/timer'
 import 'dynamicText'
 import 'soundManager'
 
--- local menu          <const> = playdate.getSystemMenu()
+local menu          <const> = playdate.getSystemMenu()
 -- local store         <const> = playdate.datastore.read()
 local timer         <const> = playdate.timer
 local clock         <const> = DynamicText(200, 120, 'Mikodacs-Clock')
@@ -47,11 +47,13 @@ end
 local function resetWorkTimer()
     isWorkSession = true
     resetTimer(millisecondsFromMinutes(workMinutes))
+    playdate.display.setInverted(true)
 end
 
 local function resetRestTimer()
     isWorkSession = false
     resetTimer(millisecondsFromMinutes(restMinutes))
+    playdate.display.setInverted(false)
 end
 
 local function updateClock()
@@ -64,25 +66,27 @@ local function updateClock()
     end
 end
 
+local function changeInterval(resetFn)
+    isPaused = true
+    resetFn()
+    updateClock()
+    sprite.update()
+end
+
 -- public methods:
 
 function App:setup()
-    -- menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
-    --     workMinutes = choice
-    --     startWorkTimer()
-    --     updateClock()
-    --     isPause = true
-    -- end)
-    -- menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
-    --     restMinutes = choice
-    --     startRestTimer()
-    --     updateClock()
-    --     isPause = true
-    -- end)
+    menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
+        workMinutes = choice
+        changeInterval(resetWorkTimer)
+    end)
+    menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
+        restMinutes = choice
+        changeInterval(resetRestTimer)
+    end)
 
     resetWorkTimer()
     playdate.setAutoLockDisabled(true)
-    playdate.display.setInverted(isWorkSession)
     playdate.display.setRefreshRate(15)
 end
 
@@ -118,7 +122,6 @@ function App:update()
         -- a timer start automatically when created, let's pause it before the `updateTimers()`
         -- to try and be as precise as possible
         activeTimer:pause()
-        playdate.display.setInverted(isWorkSession)
     end
 
     sprite.update()
