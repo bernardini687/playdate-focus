@@ -1,4 +1,5 @@
-*.DS_Store
-*.pdx*
 .nova/
 .vscode/
+*.DS_Store
+*.pdx*
+TEST
