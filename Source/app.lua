@@ -4,14 +4,14 @@ import 'dynamicText'
 import 'soundManager'
 
 local menu          <const> = playdate.getSystemMenu()
--- local store         <const> = playdate.datastore.read()
+local store         <const> = playdate.datastore.read()
 local timer         <const> = playdate.timer
 local clock         <const> = DynamicText(200, 120, 'Mikodacs-Clock')
 local workIntervals <const> = {'25', '30', '20'}
 local restIntervals <const> = {'5', '10', '15'}
 
-local workMinutes   = workIntervals[1]
-local restMinutes   = restIntervals[1]
+local workMinutes   = store and store.workMinutes or workIntervals[1]
+local restMinutes   = store and store.restMinutes or restIntervals[1]
 local isPaused      = true
 local isWorkSession = true
 local activeTimer
@@ -76,11 +76,11 @@ end
 -- public methods:
 
 function App:setup()
-    menu:addOptionsMenuItem('work time', workIntervals, nil, function(choice)
+    menu:addOptionsMenuItem('work time', workIntervals, workMinutes, function(choice)
         workMinutes = choice
         changeInterval(resetWorkTimer)
     end)
-    menu:addOptionsMenuItem('rest time', restIntervals, nil, function(choice)
+    menu:addOptionsMenuItem('rest time', restIntervals, restMinutes, function(choice)
         restMinutes = choice
         changeInterval(resetRestTimer)
     end)
@@ -140,9 +140,9 @@ function App:resumeOrPause()
     end
 end
 
--- function App:write()
---     playdate.datastore.write({})
--- end
+function App:write()
+    playdate.datastore.write({ workMinutes = workMinutes, restMinutes = restMinutes })
+end
 
 -- function playdate.gameWillPause() -- DEBUG
 --     print('pause: '..activeTimer.timeLeft)
