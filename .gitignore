@@ -1,5 +1,5 @@
 .nova/
 .vscode/
 *.DS_Store
-*.pdx*
+*pdx*
 TEST
