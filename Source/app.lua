@@ -7,7 +7,7 @@ local menu          <const> = playdate.getSystemMenu()
 local store         <const> = playdate.datastore.read()
 local timer         <const> = playdate.timer
 local clock         <const> = DynamicText(200, 120, 'Mikodacs-Clock')
-local workIntervals <const> = {'25', '30', '20'}
+local workIntervals <const> = {'25', '30', '35', '40', '45', '50', '55', '15', '20'}
 local restIntervals <const> = {'5', '10', '15'}
 
 local workMinutes   = store and store.workMinutes or workIntervals[1]
